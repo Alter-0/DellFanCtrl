@@ -26,15 +26,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# 安装 Dell iDRAC 工具（如果有的话）
-# ARG DRACTOOLS_PKG=DellEMC-iDRACTools-Web-LX-9.4.0-3732_A00.tar.gz
-# COPY ${DRACTOOLS_PKG} /tmp/
-# RUN tar -xzvf /tmp/${DRACTOOLS_PKG} -C /tmp/ && \
-#     cd /tmp/iDRACTools/racadm/RHEL8/x86_64/ && \
-#     alien --scripts *.rpm && \
-#     dpkg -i *.deb && \
-#     ln -s /opt/dell/srvadmin/bin/idracadm7 /usr/local/bin/racadm && \
-#     rm -rf /tmp/*
+安装 Dell iDRAC 工具（如果有的话）
+ARG DRACTOOLS_PKG=Dell-iDRACTools-Web-LX-11.2.0.0-213_A00.tar.gz
+COPY ${DRACTOOLS_PKG} /tmp/
+RUN tar -xzvf /tmp/${DRACTOOLS_PKG} -C /tmp/ && \
+    cd /tmp/iDRACTools/racadm/RHEL8/x86_64/ && \
+    alien --scripts *.rpm && \
+    dpkg -i *.deb && \
+    ln -s /opt/dell/srvadmin/bin/idracadm7 /usr/local/bin/racadm && \
+    rm -rf /tmp/*
 
 # 安装 Python 依赖
 COPY backend/requirements.txt ./
