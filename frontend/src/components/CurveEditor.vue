@@ -76,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useFanStore } from '../stores/fan'
 import * as echarts from 'echarts'
 import { ElMessage } from 'element-plus'
@@ -86,6 +86,7 @@ const chartRef = ref(null)
 const points = ref([])
 const saving = ref(false)
 let chart = null
+let resizeObserver = null
 
 // 计算给定温度对应的转速
 function calculateSpeed(temp) {
@@ -106,8 +107,23 @@ function calculateSpeed(temp) {
 }
 
 function initChart() {
+  if (!chartRef.value) return
+  
+  // 确保容器有尺寸
+  if (chartRef.value.offsetWidth === 0 || chartRef.value.offsetHeight === 0) {
+    // 延迟初始化
+    setTimeout(initChart, 100)
+    return
+  }
+  
   chart = echarts.init(chartRef.value)
   updateChart()
+  
+  // 使用 ResizeObserver 监听容器尺寸变化
+  resizeObserver = new ResizeObserver(() => {
+    chart?.resize()
+  })
+  resizeObserver.observe(chartRef.value)
 }
 
 function updateChart() {
@@ -253,9 +269,23 @@ onMounted(async () => {
       { temp: 80, speed: 40 }
     ]
   }
-  initChart()
+  
+  // 等待 DOM 更新后再初始化图表
+  await nextTick()
+  setTimeout(initChart, 50)
   
   window.addEventListener('resize', () => chart?.resize())
+})
+
+onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
+  if (chart) {
+    chart.dispose()
+    chart = null
+  }
+  window.removeEventListener('resize', () => chart?.resize())
 })
 </script>
 

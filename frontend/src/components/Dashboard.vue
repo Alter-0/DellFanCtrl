@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useFanStore } from '../stores/fan'
 import * as echarts from 'echarts'
 
@@ -72,6 +72,7 @@ const fanStore = useFanStore()
 const chartRef = ref(null)
 const timeRange = ref('1h')
 let chart = null
+let resizeObserver = null
 
 const tempClass = computed(() => {
   const temp = fanStore.status.cpu_temp
@@ -81,8 +82,22 @@ const tempClass = computed(() => {
 })
 
 function initChart() {
+  if (!chartRef.value) return
+  
+  // 确保容器有尺寸
+  if (chartRef.value.offsetWidth === 0 || chartRef.value.offsetHeight === 0) {
+    setTimeout(initChart, 100)
+    return
+  }
+  
   chart = echarts.init(chartRef.value)
   updateChart()
+  
+  // 使用 ResizeObserver 监听容器尺寸变化
+  resizeObserver = new ResizeObserver(() => {
+    chart?.resize()
+  })
+  resizeObserver.observe(chartRef.value)
 }
 
 function updateChart() {
@@ -161,11 +176,23 @@ async function loadHistory() {
 
 watch(() => fanStore.history, updateChart, { deep: true })
 
-onMounted(() => {
-  initChart()
+onMounted(async () => {
+  // 等待 DOM 更新后再初始化图表
+  await nextTick()
+  setTimeout(initChart, 50)
   loadHistory()
   
   window.addEventListener('resize', () => chart?.resize())
+})
+
+onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
+  if (chart) {
+    chart.dispose()
+    chart = null
+  }
 })
 </script>
 
