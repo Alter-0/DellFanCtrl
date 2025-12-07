@@ -2,7 +2,8 @@
   <el-container class="app-container">
     <el-header>
       <div class="header-content">
-        <h1>🖥️ Dell 服务器风扇控制</h1>
+        <img src="/logo.png" alt="Logo" class="header-logo" />
+        <h1>Dell 服务器风扇控制</h1>
         <el-tag :type="statusType">{{ statusText }}</el-tag>
       </div>
     </el-header>
@@ -72,10 +73,18 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  gap: 12px;
+}
+
+.header-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
 }
 
 .header-content h1 {
   margin: 0;
   font-size: 1.5rem;
+  flex: 1;
 }
 </style>

@@ -1,11 +1,17 @@
-# Dell 服务器风扇控制系统
+<p align="center">
+  <img src="frontend/public/logo.png" alt="Dell Fan Controller" width="128" height="128">
+</p>
 
+<h1 align="center">Dell 服务器风扇控制系统</h1>
+
+<p align="center">
 一个现代化的 Dell 服务器风扇控制 Web 应用，支持可视化曲线编辑、实时监控和历史数据分析。
+</p>
 
 ## 功能特性
 
 - 🌡️ 实时监控 CPU 温度、风扇转速、系统功耗
-- 📈 可视化风扇曲线编辑器，支持拖拽调整
+- 📈 可视化风扇曲线编辑器
 - 📊 历史数据趋势图（1小时/6小时/24小时/7天）
 - 📝 实时日志查看，支持级别过滤和搜索
 - ⚙️ Web 界面配置管理
@@ -15,64 +21,48 @@
 
 - 后端：FastAPI + SQLite + WebSocket
 - 前端：Vue 3 + Element Plus + ECharts
-- 部署：Docker + Nginx
+- 部署：Docker
 
-## 快速开始
+## 快速部署
 
-### Docker 部署（推荐）
+### 前置要求
 
-```bash
-# 构建并启动
-docker-compose up -d --build
+- Docker & Docker Compose
+- Dell iDRAC Tools 安装包
 
-# 访问 Web 界面
-# http://your-server-ip:5936
+### 1. 下载 Dell iDRAC Tools
+
+从 Dell 官网下载 iDRAC Tools Linux 版本：
+
+**下载链接：** [Dell iDRAC Tools](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=j72j9)
+
+下载后将 `Dell-iDRACTools-Web-LX-*.tar.gz` 文件放到项目根目录，并修改 `Dockerfile` 中的文件名：
+
+```dockerfile
+ARG DRACTOOLS_PKG=Dell-iDRACTools-Web-LX-11.2.0.0-213_A00.tar.gz  # 改为你下载的实际文件名
 ```
 
-### 本地开发
-
-#### 一键启动（Windows）
+### 2. 一键启动
 
 ```bash
-# 启动后端（新终端窗口）
-dev.bat
+# 克隆项目
+git clone <your-repo-url>
+cd dell-fan-controller
 
-# 启动前端（另一个终端窗口）
-dev-frontend.bat
+# 启动服务
+./docker-start.sh
+
+# 或手动执行
+export DOCKER_BUILDKIT=0
+docker-compose build
+docker-compose up -d
 ```
 
-#### 手动启动
-
-后端：
-```bash
-# 创建虚拟环境
-python -m venv .venv
-
-# 激活虚拟环境 (Windows)
-.\.venv\Scripts\activate
-
-# 安装依赖
-pip install -r backend/requirements.txt
-
-# 启动后端
-cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-前端：
-```bash
-cd frontend
-
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-```
+访问地址：http://your-server-ip:5936
 
 ## 首次配置
 
-1. 打开浏览器访问 `http://localhost:8080`（Docker）或 `http://localhost:5173`（开发模式）
+1. 打开浏览器访问 `http://your-server-ip:5936`
 2. 进入「系统设置」页面
 3. 填写 iDRAC 连接信息：
    - IP 地址：服务器 iDRAC 的 IP
@@ -96,18 +86,35 @@ dell-fan-controller/
 │   │   ├── components/     # Vue 组件
 │   │   └── stores/         # Pinia 状态管理
 │   └── package.json
-├── data/                   # 数据目录
+├── data/                   # 数据目录（挂载卷）
 ├── docker-compose.yml
 ├── Dockerfile
-└── nginx.conf
+├── docker-start.sh         # 一键启动脚本
+└── start.sh                # 容器启动脚本
+```
+
+## 常用命令
+
+```bash
+# 查看日志
+docker-compose logs -f
+
+# 重启服务
+docker-compose restart
+
+# 停止服务
+docker-compose down
+
+# 重新构建
+./docker-start.sh
 ```
 
 ## API 文档
 
-启动后端后访问：`http://localhost:8000/docs`
+启动后访问：`http://your-server-ip:5936/docs`
 
 ## 注意事项
 
-- 需要 ipmitool 和 racadm 工具支持
+- **必须下载 Dell iDRAC Tools** 才能正常控制风扇
 - 确保服务器 iDRAC 网络可达
-- 建议在 Docker 环境中运行以获得完整功能
+- 数据持久化在 `./data` 目录
