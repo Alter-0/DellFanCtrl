@@ -8,6 +8,10 @@
 一个现代化的 Dell 服务器风扇控制 Web 应用，支持可视化曲线编辑、实时监控和历史数据分析。
 </p>
 
+<p align="center">
+  <img src="docs/images/screenshot.png" alt="Screenshot" width="800">
+</p>
+
 ## 功能特性
 
 - 🌡️ 实时监控 CPU 温度、风扇转速、系统功耗
@@ -118,3 +122,7 @@ docker-compose down
 - **必须下载 Dell iDRAC Tools** 才能正常控制风扇
 - 确保服务器 iDRAC 网络可达
 - 数据持久化在 `./data` 目录
+
+## 开源协议
+
+本项目基于 [MIT License](LICENSE) 开源。
