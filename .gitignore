@@ -160,3 +160,21 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+
+# Node.js
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Data files
+data/fan_controller.db
+data/logs/*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Static files (built)
+static/

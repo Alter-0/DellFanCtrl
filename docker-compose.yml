@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  dell-fan-controller:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dell-fan-controller
+    restart: unless-stopped
+    ports:
+      - "5936:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - TZ=Asia/Shanghai
+      - DOCKER_BUILDKIT=0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/dashboard/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
