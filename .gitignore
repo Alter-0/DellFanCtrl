@@ -178,3 +178,4 @@ data/logs/*.log
 
 # Static files (built)
 static/
+docker-push.sh

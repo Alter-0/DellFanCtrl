@@ -5,6 +5,11 @@
 <h1 align="center">Dell 服务器风扇控制系统</h1>
 
 <p align="center">
+  <a href="https://hub.docker.com/r/gaibian/dellfanctrl"><img src="https://img.shields.io/docker/pulls/gaibian/dellfanctrl?style=flat-square&logo=docker" alt="Docker Pulls"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"></a>
+</p>
+
+<p align="center">
 一个现代化的 Dell 服务器风扇控制 Web 应用，支持可视化曲线编辑、实时监控和历史数据分析。
 </p>
 
@@ -29,12 +34,31 @@
 
 ## 快速部署
 
-### 前置要求
+### 方式一：使用 Docker Hub 镜像（推荐）
 
-- Docker & Docker Compose
-- Dell iDRAC Tools 安装包
+镜像已包含所有依赖，开箱即用。
 
-### 1. 下载 Dell iDRAC Tools
+```bash
+# 拉取镜像
+docker pull gaibian/dellfanctrl:latest
+
+# 运行容器
+docker run -d \
+  --name dell-fan-controller \
+  -p 5936:8000 \
+  -v ./data:/app/data \
+  -e TZ=Asia/Shanghai \
+  --restart unless-stopped \
+  gaibian/dellfanctrl:latest
+```
+
+访问地址：http://your-server-ip:5936
+
+### 方式二：从源码构建
+
+如需自行构建，需要先下载 Dell iDRAC Tools。
+
+#### 1. 下载 Dell iDRAC Tools
 
 从 Dell 官网下载 iDRAC Tools Linux 版本：
 
@@ -46,7 +70,7 @@
 ARG DRACTOOLS_PKG=Dell-iDRACTools-Web-LX-11.2.0.0-213_A00.tar.gz  # 改为你下载的实际文件名
 ```
 
-### 2. 一键启动
+#### 2. 构建并启动
 
 ```bash
 # 克隆项目
@@ -61,8 +85,6 @@ export DOCKER_BUILDKIT=0
 docker-compose build
 docker-compose up -d
 ```
-
-访问地址：http://your-server-ip:5936
 
 ## 首次配置
 
@@ -119,9 +141,9 @@ docker-compose down
 
 ## 注意事项
 
-- **必须下载 Dell iDRAC Tools** 才能正常控制风扇
 - 确保服务器 iDRAC 网络可达
 - 数据持久化在 `./data` 目录
+- 从源码构建需要下载 Dell iDRAC Tools
 
 ## 开源协议
 
