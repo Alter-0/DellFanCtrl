@@ -3,10 +3,10 @@ Data Cleanup Service for automatic removal of old MonitorHistory records.
 """
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from database import SessionLocal, MonitorHistory, Settings
+from database import SessionLocal, MonitorHistory, Settings, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class DataCleanupService:
         Returns:
             Number of deleted records.
         """
-        cutoff_date = datetime.utcnow() - timedelta(days=self._retention_days)
+        cutoff_date = utcnow() - timedelta(days=self._retention_days)
         
         db = SessionLocal()
         try:
@@ -88,8 +88,8 @@ class DataCleanupService:
         """Internal method to run cleanup periodically."""
         while self._running:
             try:
-                # Calculate time until next 3:00 AM
-                now = datetime.now()
+                # Calculate time until next 3:00 AM (UTC)
+                now = utcnow()
                 next_run = now.replace(hour=3, minute=0, second=0, microsecond=0)
                 if now >= next_run:
                     next_run += timedelta(days=1)

@@ -255,6 +255,9 @@ async function resetCurve() {
 
 watch(() => fanStore.status.cpu_temp, updateChart)
 
+// 保存 resize 处理函数引用，以便正确移除
+const handleResize = () => chart?.resize()
+
 onMounted(async () => {
   try {
     await fanStore.fetchCurve()
@@ -274,18 +277,18 @@ onMounted(async () => {
   await nextTick()
   setTimeout(initChart, 50)
   
-  window.addEventListener('resize', () => chart?.resize())
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
   if (resizeObserver) {
     resizeObserver.disconnect()
   }
+  window.removeEventListener('resize', handleResize)
   if (chart) {
     chart.dispose()
     chart = null
   }
-  window.removeEventListener('resize', () => chart?.resize())
 })
 </script>
 

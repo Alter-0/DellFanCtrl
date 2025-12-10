@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from database import get_db, MonitorHistory
+from database import get_db, MonitorHistory, utcnow
 
 router = APIRouter()
 
@@ -46,7 +46,7 @@ def get_history(range: str = "1h", db: Session = Depends(get_db)):
     
     delta = time_ranges.get(range, timedelta(hours=1))
     limit = max_points.get(range, 120)
-    since = datetime.utcnow() - delta
+    since = utcnow() - delta
     
     # 获取总记录数
     total_count = db.query(MonitorHistory)\

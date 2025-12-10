@@ -1,8 +1,13 @@
 from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+from datetime import datetime, timezone
 import os
+
+
+def utcnow():
+    """返回当前 UTC 时间（timezone-aware）"""
+    return datetime.now(timezone.utc)
 
 # 确保数据目录存在
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
@@ -19,14 +24,14 @@ class Settings(Base):
     id = Column(Integer, primary_key=True)
     key = Column(String, unique=True, nullable=False)
     value = Column(String, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=utcnow)
 
 class FanCurve(Base):
     __tablename__ = "fan_curve"
     id = Column(Integer, primary_key=True, autoincrement=True)
     temperature = Column(Integer, nullable=False)
     fan_speed = Column(Integer, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
 class MonitorHistory(Base):
     __tablename__ = "monitor_history"
@@ -34,7 +39,7 @@ class MonitorHistory(Base):
     cpu_temp = Column(Float, nullable=False)
     fan_speed = Column(Integer, nullable=False)
     power_consumption = Column(Integer)
-    recorded_at = Column(DateTime, default=datetime.utcnow, index=True)
+    recorded_at = Column(DateTime, default=utcnow, index=True)
 
 
 def init_db():

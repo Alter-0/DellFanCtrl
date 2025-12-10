@@ -1,11 +1,11 @@
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Tuple, Optional
 
 from services.ipmi_service import IPMIService
 from services.websocket_service import WebSocketManager
-from database import SessionLocal, MonitorHistory, FanCurve, Settings
+from database import SessionLocal, MonitorHistory, FanCurve, Settings, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,8 @@ class MonitorService:
             "power": 0,
             "control_mode": "auto"
         }
+        # 风扇曲线缓存
+        self._fan_curve_cache: Optional[List[Tuple[int, int]]] = None
     
     def calculate_fan_speed(self, temp: float, curve: List[Tuple[int, int]]) -> int:
         """根据温度曲线计算风扇转速"""
@@ -59,13 +61,22 @@ class MonitorService:
             db.close()
     
     def _get_fan_curve_sync(self) -> List[Tuple[int, int]]:
-        """获取风扇曲线配置（同步版本）"""
+        """获取风扇曲线配置（同步版本，带缓存）"""
+        if self._fan_curve_cache is not None:
+            return self._fan_curve_cache
+        
         db = SessionLocal()
         try:
             points = db.query(FanCurve).order_by(FanCurve.temperature).all()
-            return [(p.temperature, p.fan_speed) for p in points]
+            self._fan_curve_cache = [(p.temperature, p.fan_speed) for p in points]
+            return self._fan_curve_cache
         finally:
             db.close()
+    
+    def invalidate_curve_cache(self):
+        """使风扇曲线缓存失效，下次查询时重新加载"""
+        self._fan_curve_cache = None
+        logger.info("风扇曲线缓存已清除")
     
     async def start(self):
         """启动监控服务"""
@@ -112,7 +123,7 @@ class MonitorService:
                     "cpu_temp": hw_status.cpu_temp,
                     "fan_speed": target_speed,
                     "power": hw_status.power,
-                    "last_update": datetime.now().isoformat()
+                    "last_update": utcnow().isoformat()
                 })
                 
                 # 保存历史数据

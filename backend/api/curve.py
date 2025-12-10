@@ -7,6 +7,13 @@ from database import get_db, FanCurve
 
 router = APIRouter()
 
+# 全局引用，将在 main.py 中设置
+monitor_service = None
+
+def set_monitor_service(service):
+    global monitor_service
+    monitor_service = service
+
 class CurvePoint(BaseModel):
     temp: int
     speed: int
@@ -46,4 +53,9 @@ def update_curve(request: CurveUpdateRequest, db: Session = Depends(get_db)):
         db.add(FanCurve(temperature=point.temp, fan_speed=point.speed))
     
     db.commit()
+    
+    # 通知监控服务刷新曲线缓存
+    if monitor_service:
+        monitor_service.invalidate_curve_cache()
+    
     return {"success": True}

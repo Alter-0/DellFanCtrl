@@ -20,6 +20,7 @@ cleanup_service: DataCleanupService = None
 # 设置 API 模块的监控服务引用
 dashboard.set_monitor_service(monitor_service)
 settings.set_monitor_service(monitor_service)
+curve.set_monitor_service(monitor_service)
 
 def get_retention_days_from_db() -> int:
     """从数据库获取保留天数配置"""

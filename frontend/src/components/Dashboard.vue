@@ -212,6 +212,9 @@ watch(hasHistoryData, (newValue) => {
   }
 })
 
+// 保存 resize 处理函数引用，以便正确移除
+const handleResize = () => chart?.resize()
+
 onMounted(async () => {
   // 等待 DOM 更新后再初始化图表
   await nextTick()
@@ -222,13 +225,14 @@ onMounted(async () => {
     setTimeout(initChart, 50)
   }
   
-  window.addEventListener('resize', () => chart?.resize())
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
   if (resizeObserver) {
     resizeObserver.disconnect()
   }
+  window.removeEventListener('resize', handleResize)
   if (chart) {
     chart.dispose()
     chart = null
