@@ -46,7 +46,7 @@
     </el-row>
     
     <!-- 历史趋势图 -->
-    <el-card class="chart-card">
+    <el-card class="chart-card" shadow="hover">
       <template #header>
         <div class="chart-header">
           <span>历史趋势</span>

@@ -1,6 +1,6 @@
 <template>
   <div class="curve-editor">
-    <el-card>
+    <el-card shadow="hover">
       <template #header>
         <div class="editor-header">
           <span>风扇曲线编辑器</span>

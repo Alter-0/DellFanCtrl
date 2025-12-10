@@ -1,6 +1,6 @@
 <template>
   <div class="log-viewer">
-    <el-card>
+    <el-card shadow="hover">
       <template #header>
         <div class="log-header">
           <span>系统日志</span>

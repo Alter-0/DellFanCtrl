@@ -1,6 +1,6 @@
 <template>
   <div class="settings">
-    <el-card>
+    <el-card shadow="hover">
       <template #header>
         <span>iDRAC 连接设置</span>
       </template>
@@ -32,7 +32,7 @@
       </el-form>
     </el-card>
     
-    <el-card class="danger-zone">
+    <el-card class="danger-zone" shadow="hover">
       <template #header>
         <span style="color: #F56C6C">危险操作</span>
       </template>
