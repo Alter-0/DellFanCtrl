@@ -5,6 +5,7 @@
 <h1 align="center">Dell 服务器风扇控制系统</h1>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-green?style=flat-square" alt="Version">
   <a href="https://hub.docker.com/r/gaibian/dellfanctrl"><img src="https://img.shields.io/docker/pulls/gaibian/dellfanctrl?style=flat-square&logo=docker" alt="Docker Pulls"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"></a>
 </p>

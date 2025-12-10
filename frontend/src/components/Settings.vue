@@ -31,6 +31,31 @@
         </el-form-item>
       </el-form>
     </el-card>
+
+    <el-card shadow="hover" class="retention-card">
+      <template #header>
+        <span>数据保留设置</span>
+      </template>
+      
+      <el-form label-width="120px">
+        <el-form-item label="保留期限">
+          <el-select 
+            v-model="retentionDays" 
+            placeholder="选择保留期限"
+            @change="updateRetention"
+            :loading="retentionLoading"
+          >
+            <el-option
+              v-for="option in retentionOptions"
+              :key="option"
+              :label="formatRetentionLabel(option)"
+              :value="option"
+            />
+          </el-select>
+        </el-form-item>
+        <p class="hint">超过保留期限的历史监控数据将被自动清理</p>
+      </el-form>
+    </el-card>
     
     <el-card class="danger-zone" shadow="hover">
       <template #header>
@@ -59,6 +84,11 @@ const form = reactive({
   password: '',
   interval: 30
 })
+
+// Retention settings state
+const retentionDays = ref(30)
+const retentionOptions = ref([7, 30, 90, 365])
+const retentionLoading = ref(false)
 
 const rules = {
   ip_address: [
@@ -125,8 +155,43 @@ async function restoreAutoControl() {
   }
 }
 
+async function loadRetentionSettings() {
+  try {
+    const { data } = await axios.get('/api/settings/retention')
+    retentionDays.value = data.retention_days
+    retentionOptions.value = data.options
+  } catch (error) {
+    console.error('Failed to load retention settings:', error)
+    ElMessage.error('加载数据保留设置失败')
+  }
+}
+
+async function updateRetention(days) {
+  retentionLoading.value = true
+  try {
+    await axios.put('/api/settings/retention', { retention_days: days })
+    ElMessage.success('数据保留设置已更新')
+  } catch (error) {
+    console.error('Failed to update retention settings:', error)
+    ElMessage.error('更新数据保留设置失败')
+    // Reload to restore previous value
+    await loadRetentionSettings()
+  } finally {
+    retentionLoading.value = false
+  }
+}
+
+function formatRetentionLabel(days) {
+  if (days === 7) return '7 天'
+  if (days === 30) return '30 天'
+  if (days === 90) return '90 天 (3 个月)'
+  if (days === 365) return '365 天 (1 年)'
+  return `${days} 天`
+}
+
 onMounted(() => {
   loadSettings()
+  loadRetentionSettings()
 })
 </script>
 
@@ -139,6 +204,10 @@ onMounted(() => {
 .unit {
   margin-left: 10px;
   color: #909399;
+}
+
+.retention-card {
+  margin-top: 20px;
 }
 
 .danger-zone {

@@ -58,7 +58,12 @@
           </el-radio-group>
         </div>
       </template>
-      <div ref="chartRef" class="history-chart"></div>
+      <template v-if="hasHistoryData">
+        <div ref="chartRef" class="history-chart"></div>
+      </template>
+      <template v-else>
+        <EmptyState />
+      </template>
     </el-card>
   </div>
 </template>
@@ -67,6 +72,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useFanStore } from '../stores/fan'
 import * as echarts from 'echarts'
+import EmptyState from './EmptyState.vue'
 
 const fanStore = useFanStore()
 const chartRef = ref(null)
@@ -79,6 +85,11 @@ const tempClass = computed(() => {
   if (temp >= 80) return 'danger'
   if (temp >= 70) return 'warning'
   return 'normal'
+})
+
+// Computed property to check if history data is empty
+const hasHistoryData = computed(() => {
+  return fanStore.history && fanStore.history.length > 0
 })
 
 function initChart() {
@@ -168,19 +179,48 @@ function updateChart() {
 async function loadHistory() {
   try {
     await fanStore.fetchHistory(timeRange.value)
-    updateChart()
+    // Only update chart if it exists and we have data
+    if (chart && hasHistoryData.value) {
+      updateChart()
+    }
   } catch (error) {
     console.error('Failed to load history:', error)
   }
 }
 
-watch(() => fanStore.history, updateChart, { deep: true })
+// Watch history changes and update chart when data is available
+watch(() => fanStore.history, () => {
+  if (hasHistoryData.value) {
+    nextTick(() => {
+      if (!chart && chartRef.value) {
+        initChart()
+      } else {
+        updateChart()
+      }
+    })
+  }
+}, { deep: true })
+
+// Watch hasHistoryData to initialize chart when data becomes available
+watch(hasHistoryData, (newValue) => {
+  if (newValue) {
+    nextTick(() => {
+      if (!chart && chartRef.value) {
+        initChart()
+      }
+    })
+  }
+})
 
 onMounted(async () => {
   // 等待 DOM 更新后再初始化图表
   await nextTick()
-  setTimeout(initChart, 50)
   loadHistory()
+  
+  // Only initialize chart if we have data
+  if (hasHistoryData.value) {
+    setTimeout(initChart, 50)
+  }
   
   window.addEventListener('resize', () => chart?.resize())
 })

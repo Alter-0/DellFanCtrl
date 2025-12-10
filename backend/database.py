@@ -49,9 +49,15 @@ def init_db():
                 Settings(key="username", value="root"),
                 Settings(key="password", value=""),
                 Settings(key="interval", value="30"),
+                Settings(key="retention_days", value="30"),
             ]
             db.add_all(defaults)
             db.commit()
+        else:
+            # 确保 retention_days 设置存在（用于已有数据库的升级）
+            if not db.query(Settings).filter(Settings.key == "retention_days").first():
+                db.add(Settings(key="retention_days", value="30"))
+                db.commit()
         
         # 初始化默认风扇曲线
         if not db.query(FanCurve).first():
