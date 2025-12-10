@@ -42,14 +42,18 @@
 # 拉取镜像
 docker pull gaibian/dellfanctrl:latest
 
-# 运行容器
+# 运行容器（请根据实际情况修改）
 docker run -d \
   --name dell-fan-controller \
   -p 5936:8000 \
-  -v ./data:/app/data \
+  -v /your/data/path:/app/data \
   -e TZ=Asia/Shanghai \
   --restart unless-stopped \
   gaibian/dellfanctrl:latest
+
+# 参数说明：
+# -p 5936:8000        端口映射，可改为其他端口如 -p 8080:8000
+# -v /your/data/path  数据持久化目录，请改为实际路径如 -v /home/user/fanctrl-data:/app/data
 ```
 
 访问地址：http://your-server-ip:5936

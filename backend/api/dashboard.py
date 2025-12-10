@@ -28,7 +28,7 @@ def get_status():
 
 @router.get("/history")
 def get_history(range: str = "1h", db: Session = Depends(get_db)):
-    """获取历史数据"""
+    """获取历史数据（自动采样，限制最大数据点数）"""
     time_ranges = {
         "1h": timedelta(hours=1),
         "6h": timedelta(hours=6),
@@ -36,13 +36,40 @@ def get_history(range: str = "1h", db: Session = Depends(get_db)):
         "7d": timedelta(days=7),
     }
     
+    # 每个时间范围的最大数据点数
+    max_points = {
+        "1h": 120,    # 1小时，约30秒一个点
+        "6h": 180,    # 6小时，约2分钟一个点
+        "24h": 288,   # 24小时，约5分钟一个点
+        "7d": 336,    # 7天，约30分钟一个点
+    }
+    
     delta = time_ranges.get(range, timedelta(hours=1))
+    limit = max_points.get(range, 120)
     since = datetime.utcnow() - delta
     
-    records = db.query(MonitorHistory)\
+    # 获取总记录数
+    total_count = db.query(MonitorHistory)\
         .filter(MonitorHistory.recorded_at >= since)\
-        .order_by(MonitorHistory.recorded_at)\
-        .all()
+        .count()
+    
+    # 计算采样间隔
+    if total_count <= limit:
+        # 数据量不大，直接返回全部
+        records = db.query(MonitorHistory)\
+            .filter(MonitorHistory.recorded_at >= since)\
+            .order_by(MonitorHistory.recorded_at)\
+            .all()
+    else:
+        # 数据量大，进行采样
+        # 使用 SQL 的 ROW_NUMBER 进行均匀采样
+        step = total_count // limit
+        records = db.query(MonitorHistory)\
+            .filter(MonitorHistory.recorded_at >= since)\
+            .order_by(MonitorHistory.recorded_at)\
+            .all()
+        # 均匀采样
+        records = records[::step][:limit]
     
     return {
         "data": [
